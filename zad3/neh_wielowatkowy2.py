@@ -1,4 +1,5 @@
 import time
+import multiprocessing 
 
 def read_data(filename):
     with open(filename, 'r') as file:
@@ -34,6 +35,15 @@ def read_data(filename):
 
     return data
 
+def check_schedule(data, task, schedule, j):
+    new_schedule = schedule[:j] + [task[0]] + schedule[j:]
+    new_time = calculate_schedule_time(data, new_schedule)
+    return new_time, j
+
+def check_schedule_wrapper(args):
+    data, task, schedule, j = args
+    return check_schedule(data, task, schedule, j)
+
 def neh(data):
     n = data["zadania"]
     tasks = data["tasks"]
@@ -43,22 +53,25 @@ def neh(data):
 
     # Initialize schedule with first two tasks
     schedule = [tasks[0][0]]
-    time_schedule = [calculate_schedule_time(data, schedule)]
+    best_time_overall = calculate_schedule_time(data, schedule)
 
     # Insert remaining tasks
     for i in range(1, n):
         best_time = float('inf')
         best_index = 0
-        for j in range(i + 1):
-            new_schedule = schedule[:j] + [tasks[i][0]] + schedule[j:]
-            new_time = calculate_schedule_time(data, new_schedule)
-            if new_time < best_time:
-                best_time = new_time
-                best_index = j
-        schedule.insert(best_index, tasks[i][0])
-        time_schedule.append(best_time)
 
-    return schedule, time_schedule[-1]
+        with multiprocessing.Pool() as pool:
+            results = pool.map(check_schedule_wrapper, [(data, tasks[i], schedule, j) for j in range(i + 1)])
+            for result in results:
+                new_time, j = result
+                if new_time < best_time:
+                    best_time = new_time
+                    best_index = j
+
+        schedule.insert(best_index, tasks[i][0])
+        best_time_overall = best_time
+
+    return schedule, best_time_overall
 
 
 def calculate_schedule_time(data, schedule):

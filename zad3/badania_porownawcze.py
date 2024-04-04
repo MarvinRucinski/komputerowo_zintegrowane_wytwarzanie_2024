@@ -13,17 +13,17 @@ if __name__ == "__main__":
 
     for i, instance_data in list(data.items()):
 
-        start = time.time()
-        neh_bez_akceleracji.neh(instance_data)
-        end = time.time()
-        time_bez_akc = end - start
+        # start = time.time()
+        # neh_bez_akceleracji.neh(instance_data)
+        # end = time.time()
+        # time_bez_akc = end - start
 
         start = time.time()
         neh_akceleracja.neh(instance_data)
         end = time.time()
         time_akc = end - start
 
-        list_time_bez_akc.append(time_bez_akc)
+        # list_time_bez_akc.append(time_bez_akc)
         list_time_akc.append(time_akc)
 
         print(i)
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     width = 0.35
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width/2, list_time_bez_akc, width, label='Bez akceleracji')
+    # rects1 = ax.bar(x - width/2, list_time_bez_akc, width, label='Bez akceleracji')
     rects2 = ax.bar(x + width/2, list_time_akc, width, label='Z akceleracją')
 
     ax.set_ylabel('Czas [s]')

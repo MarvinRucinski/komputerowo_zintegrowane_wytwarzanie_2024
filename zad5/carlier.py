@@ -7,6 +7,23 @@ import time
 
 time_limit = 0.2
 
+import heapq
+
+class MinHeap:
+    def __init__(self):
+        self.heap = []
+
+    def push(self, item):
+        # Item is a tuple (LB, problem_state)
+        heapq.heappush(self.heap, item)
+
+    def pop(self):
+        return heapq.heappop(self.heap)
+
+    def is_empty(self):
+        return len(self.heap) == 0
+
+
 class PriorityQueue:
 
     def __init__(self, key, rev, l):
@@ -132,6 +149,17 @@ def schrage_div(data):
             t += int(e[1])
             C_max = max(C_max, int(t+int(e[2])))
 
+        
+        # Eliminacyjny test najwcześniejszego czasu rozpoczęcia (r)
+        if not G.is_empty() and e[0] > t:
+            # print("Eliminacja: zadanie nie może być rozpoczęte ze względu na zbyt późne 'r'")
+            continue
+
+        # Eliminacyjny test najpóźniejszego czasu zakończenia (q)
+        if not G.is_empty() and e[2] < C_max - t:
+            # print("Eliminacja: zadanie nie może być zakończone przed 'q'")
+            continue
+
 
     return C_max
 
@@ -204,13 +232,6 @@ if __name__ == "__main__":
         result = carlier(x['tasks'])
         execution_time = time.time() - start_time
         print('Carlier: ' + str(result) +'\t| ' + 'Odp: '+ str(x['Cmax']) + '\t| Czas: ' + str(execution_time))
-
-
-
-
-
-
-
 
 
 

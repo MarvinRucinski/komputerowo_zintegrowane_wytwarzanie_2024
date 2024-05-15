@@ -149,17 +149,6 @@ def schrage_div(data):
             t += int(e[1])
             C_max = max(C_max, int(t+int(e[2])))
 
-        
-        # Eliminacyjny test najwcześniejszego czasu rozpoczęcia (r)
-        if not G.is_empty() and e[0] > t:
-            # print("Eliminacja: zadanie nie może być rozpoczęte ze względu na zbyt późne 'r'")
-            continue
-
-        # Eliminacyjny test najpóźniejszego czasu zakończenia (q)
-        if not G.is_empty() and e[2] < C_max - t:
-            # print("Eliminacja: zadanie nie może być zakończone przed 'q'")
-            continue
-
 
     return C_max
 
@@ -195,6 +184,9 @@ def findRPQprim(lst, b, c):
 
 def carlier(lst):
     global start_time
+    if 'start_time' not in globals():
+        start_time = time.time()
+        
     if time.time() - start_time > time_limit:
         return 9999999999
     lst, Cmax, b = schrage(copy.deepcopy(lst)) # b - pozycja cmax w permutacji

@@ -183,38 +183,51 @@ def findRPQprim(lst, b, c):
     return rprim, pprim, qprim
 
 def carlier(lst):
-    global start_time
-    if time.time() - start_time > time_limit:
-        return 9999999999
-    lst, Cmax, b = schrage(copy.deepcopy(lst)) # b - pozycja cmax w permutacji
-    a = findA(lst, b, Cmax)
-    c = findC(lst, a, b)
-    if not c:
-        return Cmax
+    start_time = time.time()
+    heap = MinHeap()  # Inicjalizacja kopca
+    initial_solution = schrage(copy.deepcopy(lst))
+    # initial_lb = sum([task[1] for task in lst.values()])  # Prosty sposób na obliczenie LB
+    initial_lb = schrage_div(copy.deepcopy(lst))  # Obliczenie LB za pomocą schrage_div
+    heap.push((initial_lb, lst, initial_solution))
 
-    rprim, pprim, qprim = findRPQprim(lst, b, c)
-    r_saved = lst[c][0]
-    lst[c][0] = max(lst[c][0], rprim + pprim) # zmieniamy r
-    LB = schrage_div(copy.deepcopy(lst))
+    best_Cmax = float('inf')
 
-    if LB < Cmax:
-        Cmax = min(Cmax, carlier(lst))
+    while not heap.is_empty():
+        if time.time() - start_time > time_limit:
+            return best_Cmax  # Przekroczenie limitu czasu
 
-    lst[c][0] = r_saved # przywracamy starą wartość r
+        current_lb, _, current_solution = heap.pop()
+        current_lst, Cmax, b = current_solution
 
-    q_saved = lst[c][2] 
-    lst[c][2] = max(lst[c][2], qprim + pprim) # zmieniamy q
-    LB = schrage_div(copy.deepcopy(lst))
+        if current_lb >= best_Cmax:
+            continue
 
-    if LB < Cmax:
-        Cmax = min(Cmax, carlier(lst))
+        if Cmax < best_Cmax:
+            best_Cmax = Cmax  # Aktualizacja najlepszego znalezionego rozwiązania
 
-    lst[c][2] = q_saved # przywracamy starą wartość r
+        a = findA(current_lst, b, Cmax)
+        c = findC(current_lst, a, b)
+        if c is None:
+            continue  # Brak możliwości dalszego podziału
 
-    return Cmax
+        rprim, pprim, qprim = findRPQprim(current_lst, b, c)
+
+        # Tworzenie podproblemów
+        # Podproblem dla zmodyfikowanego r
+        modified_lst = copy.deepcopy(current_lst)
+        modified_lst[c][0] = max(modified_lst[c][0], rprim + pprim)
+        LB = schrage_div(copy.deepcopy(modified_lst))  # Ponowne obliczenie LB
+        heap.push((LB, modified_lst, schrage(modified_lst)))
+
+        # Podproblem dla zmodyfikowanego q
+        modified_lst = copy.deepcopy(current_lst)
+        modified_lst[c][2] = max(modified_lst[c][2], qprim + pprim)
+        LB = schrage_div(copy.deepcopy(modified_lst))  # Ponowne obliczenie LB
+        heap.push((LB, modified_lst, schrage(modified_lst)))
+
+    return best_Cmax
 
 if __name__ == "__main__":
-    global start_time
     from data import data
     for x in data.values():
         start_time = time.time()
